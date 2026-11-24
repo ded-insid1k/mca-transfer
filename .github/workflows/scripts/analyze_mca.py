@@ -78,7 +78,7 @@ def main():
 
             try:
                 chunk = decode_chunk(chunk_data)
-                root = chunk.get("")
+                root = chunk
 
                 cx = rx * 32 + (slot % 32)
                 cz = rz * 32 + (slot // 32)
