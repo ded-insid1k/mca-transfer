@@ -1,0 +1,60 @@
+
+name: Split blocks CSV
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Split CSV
+        run: |
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+
+          source = Path("blocks.csv")
+          output = Path("blocks")
+          output.mkdir(exist_ok=True)
+
+          with source.open(encoding="utf-8", newline="") as f:
+              reader = csv.reader(f)
+              header = next(reader)
+              part = 1
+              count = 0
+              out = None
+              writer = None
+
+              for row in reader:
+                  if count % 5000 == 0:
+                      if out:
+                          out.close()
+                      out = (output / f"blocks_{part:03}.csv").open(
+                          "w", encoding="utf-8", newline=""
+                      )
+                      writer = csv.writer(out)
+                      writer.writerow(header)
+                      part += 1
+
+                  writer.writerow(row)
+                  count += 1
+
+              if out:
+                  out.close()
+
+          print(f"Split {count} rows into {part - 1} files")
+          PY
+
+      - name: Commit parts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add blocks/
+          git commit -m "Split blocks CSV into parts" || exit 0
+          git push
