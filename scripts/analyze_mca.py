@@ -136,7 +136,7 @@ def main():
                         chunk_positions.append((x, y, z))
 
                         if name != "minecraft:dirt":
-    block_rows.append((x, y, z, name))
+                            block_rows.append((x, y, z, name))
 
                 if chunk_positions:
                     xs = [p[0] for p in chunk_positions]
